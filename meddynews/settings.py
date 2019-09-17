@@ -25,7 +25,7 @@ SECRET_KEY = '+vh$634_01#awss5=t2ft(o!eg#c57@6_*g%yskkfspw^9t+#%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'news.apps.NewsConfig',
 ]
 
 MIDDLEWARE = [
