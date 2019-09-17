@@ -2,78 +2,18 @@ import requests
 import random
 from newsapi import NewsApiClient
 from django.http import JsonResponse
+from news.aggregators import NewsAggregator
 
-# api client for newsapi for better searching
-newsapi = NewsApiClient(api_key='0837d40b0c74488fb26770bce8c781f4')
 
-# list of news aggregators
-news_vendors = {
-    "reddit": "https://www.reddit.com/r/{}/.json",
-    "newsapi": 'https://newsapi.org/v2/top-headlines?country=us&apiKey=0837d40b0c74488fb26770bce8c781f4'
-}
-
-def reddit_search(query):
-    """general and a better way to search for topics or subreddits"""
-    news = []
-    try:
-        response = requests.get(url=news_vendors['reddit'].format(query), headers={'User-agent': 'Mozilla/5.0'}).json()['data']['children']
-        for i in response:
-            data = {
-                "headline": i['data']['title'],
-                "link": i['data']['url'],
-                "source": 'reddit'
-            }
-            news.append(data)
-        return news
-    except ConnectionError as e:
-        return news
 
 
 def news(request):
     """generic view for grabbing news from the various apis listed above"""
-    news = []
-    for vendor, url in news_vendors.items():
-        if vendor == "reddit":
-            results = reddit_search("news")
-            news.extend(results)
-
-        if vendor == "newsapi":
-            try:
-                response = requests.get(url=url, headers={'User-agent': 'Mozilla/5.0'}).json()['articles']
-                for i in response:
-                    data = {
-                        "headline": i['title'],
-                        "link": i['url'],
-                        "source": vendor
-                    }
-                    news.append(data)
-            except ConnectionError as e:
-                pass
-
-    #shuffling the records to provide a better reading experience
-    random.shuffle(news)
+    news = NewsAggregator().search_by_vendor()
     return JsonResponse(data=news, safe=False)
 
 
 def query(request,query):
     """view to implement a feature that allows someone to search."""
-    news = []
-    for vendor, url in news_vendors.items():
-        if vendor == "newsapi":
-            try:
-                all_articles = newsapi.get_everything(q=query,language='en')['articles']
-                for i in all_articles:
-                    data = {
-                        "headline": i['title'],
-                        "link": i['url'],
-                        "source": vendor
-                    }
-                    news.append(data)
-            except ConnectionError as e:
-                pass
-
-        if vendor == "reddit":
-            results = reddit_search(query)
-            news.extend(results)
-    random.shuffle(news)
+    news = NewsAggregator(query=query).search_by_vendor()
     return JsonResponse(data=news, safe=False)
