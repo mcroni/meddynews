@@ -42,7 +42,7 @@ def news(request):
                     news.append(data)
             except ConnectionError as e:
                 pass
-
+    #shuffling the records to provide a better reading experience
     random.shuffle(news)
     return JsonResponse(data=news, safe=False)
 
@@ -76,6 +76,5 @@ def query(request,query):
                     news.append(data)
             except ConnectionError as e:
                 pass
-
     random.shuffle(news)
     return JsonResponse(data=news, safe=False)
