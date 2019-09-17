@@ -12,23 +12,30 @@ news_vendors = {
     "newsapi": 'https://newsapi.org/v2/top-headlines?country=us&apiKey=0837d40b0c74488fb26770bce8c781f4'
 }
 
+def reddit_search(query):
+    """general and a better way to search for topics or subreddits"""
+    news = []
+    try:
+        response = requests.get(url=news_vendors['reddit'].format(query), headers={'User-agent': 'Mozilla/5.0'}).json()['data']['children']
+        for i in response:
+            data = {
+                "headline": i['data']['title'],
+                "link": i['data']['url'],
+                "source": 'reddit'
+            }
+            news.append(data)
+        return news
+    except ConnectionError as e:
+        return news
+
 
 def news(request):
     """generic view for grabbing news from the various apis listed above"""
     news = []
     for vendor, url in news_vendors.items():
         if vendor == "reddit":
-            try:
-                response = requests.get(url=url.format("news"), headers={'User-agent': 'Mozilla/5.0'}).json()['data']['children']
-                for i in response:
-                    data = {
-                        "headline": i['data']['title'],
-                        "link": i['data']['url'],
-                        "source": vendor
-                    }
-                    news.append(data)
-            except ConnectionError as e:
-                pass
+            results = reddit_search("news")
+            news.extend(results)
 
         if vendor == "newsapi":
             try:
@@ -42,6 +49,7 @@ def news(request):
                     news.append(data)
             except ConnectionError as e:
                 pass
+
     #shuffling the records to provide a better reading experience
     random.shuffle(news)
     return JsonResponse(data=news, safe=False)
@@ -65,16 +73,7 @@ def query(request,query):
                 pass
 
         if vendor == "reddit":
-            try:
-                response = requests.get(url=url.format(query), headers={'User-agent': 'Mozilla/5.0'}).json()['data']['children']
-                for i in response:
-                    data = {
-                        "headline": i['data']['title'],
-                        "link": i['data']['url'],
-                        "source": vendor
-                    }
-                    news.append(data)
-            except ConnectionError as e:
-                pass
+            results = reddit_search(query)
+            news.extend(results)
     random.shuffle(news)
     return JsonResponse(data=news, safe=False)
