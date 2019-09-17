@@ -3,6 +3,5 @@ from news.views import news, query
 
 urlpatterns = [
     path('', news,name="news"),
-    path('query/<str:query>/', query, name='query'),
-
+    path('<str:query>/', query, name='query'),
 ]
