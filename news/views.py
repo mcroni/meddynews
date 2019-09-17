@@ -1,19 +1,22 @@
 import requests
-from django.http import JsonResponse
 import random
+from newsapi import NewsApiClient
+from django.http import JsonResponse
 
+# api client for newsapi for better searching
+newsapi = NewsApiClient(api_key='0837d40b0c74488fb26770bce8c781f4')
 
-"""list of vendors for news aggregation"""
+# list of news aggregators
 news_vendors = {
     "reddit": "https://www.reddit.com/r/news/.json",
-    "newsapi":'https://newsapi.org/v2/top-headlines?country=us&apiKey=0837d40b0c74488fb26770bce8c781f4'
+    "newsapi": 'https://newsapi.org/v2/top-headlines?country=us&apiKey=0837d40b0c74488fb26770bce8c781f4'
 }
 
 
 def news(request):
     """generic view for grabbing news from the various apis listed above"""
     news = []
-    for vendor,url in news_vendors.items():
+    for vendor, url in news_vendors.items():
         if vendor == "reddit":
             try:
                 response = requests.get(url=url, headers={'User-agent': 'Mozilla/5.0'}).json()['data']['children']
@@ -41,30 +44,17 @@ def news(request):
                 pass
 
     random.shuffle(news)
-    return JsonResponse(data=news,safe=False)
+    return JsonResponse(data=news, safe=False)
 
 
-def query(request,query):
+def query(request, query):
     """generic view for grabbing news from the various apis listed above"""
     news = []
-    for vendor,url in news_vendors.items():
-        if vendor == "reddit":
-            try:
-                response = requests.get(url=url, headers={'User-agent': 'Mozilla/5.0'}).json()['data']['children']
-                for i in response:
-                    data = {
-                        "headline": i['data']['title'],
-                        "link": i['data']['url'],
-                        "source": vendor
-                    }
-                    news.append(data)
-            except ConnectionError as e:
-                pass
-
+    for vendor, url in news_vendors.items():
         if vendor == "newsapi":
             try:
-                response = requests.get(url=url, headers={'User-agent': 'Mozilla/5.0'}).json()['articles']
-                for i in response:
+                all_articles = newsapi.get_everything(q='bitcoin',language='en')['articles']
+                for i in all_articles:
                     data = {
                         "headline": i['title'],
                         "link": i['url'],
@@ -75,4 +65,4 @@ def query(request,query):
                 pass
 
     random.shuffle(news)
-    return JsonResponse(data=news,safe=False)
+    return JsonResponse(data=news, safe=False)
