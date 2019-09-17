@@ -1,9 +1,11 @@
 import requests
 import random
 
+#list of vendors, here, to include a vendor, add the vendor here
 news_vendors = ['reddit',"newsapi"]
 
 class NewsAggregator:
+    """a generic class to support the use of multiple vendors """
     def __init__(self,query=None):
         self.query = query
         self.news = []
@@ -11,6 +13,7 @@ class NewsAggregator:
     def search_by_vendor(self):
         for news_vendor in news_vendors:
             if news_vendor == "reddit":
+                """docs on how to use reddit search here https://www.reddit.com/dev/api/"""
                 print("searching for reddit news")
                 url = "https://www.reddit.com/r/news/.json" if self.query is None else \
                     "https://www.reddit.com/r/{}/.json".format(self.query)
@@ -29,6 +32,7 @@ class NewsAggregator:
                     pass
 
             if news_vendor == "newsapi":
+                """docs on how to use newsapi search here https://newsapi.org/docs"""
                 print("searching for newsapi news")
                 parameters = {'apiKey': '0837d40b0c74488fb26770bce8c781f4', 'language': "en"}
                 if self.query is not None:
@@ -51,8 +55,3 @@ class NewsAggregator:
         return self.news
 
 
-
-#
-# news = NewsAggregator("bitcoin")
-# a = news.search_by_vendor()
-# print(a)
